@@ -17,9 +17,28 @@ from PIL import Image
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
-from model import build_feature_extractor as build_keras_extractor
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Reshape, GlobalAveragePooling2D
+from tensorflow.keras.applications.efficientnet import EfficientNetB3
 from model_torch import build_model
 from eval_torch import greedy_generator, beam_search_generator
+
+def build_keras_extractor(spatial=False):
+    """
+    Builds an EfficientNetB3 feature extractor using Keras.
+    """
+    base_model = EfficientNetB3(weights='imagenet', input_shape=(300, 300, 3), include_top=False)
+    base_model.trainable = False
+    
+    if spatial:
+        last_conv_output = base_model.output
+        spatial_features = Reshape((100, 1536), name='spatial_reshape')(last_conv_output)
+        model = Model(inputs=base_model.input, outputs=spatial_features, name='EfficientNetB3_Spatial')
+    else:
+        pooled_output = GlobalAveragePooling2D(name='global_avg_pool')(base_model.output)
+        model = Model(inputs=base_model.input, outputs=pooled_output, name='EfficientNetB3_Pooled')
+        
+    return model
 
 
 def main():
