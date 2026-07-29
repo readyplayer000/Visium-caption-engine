@@ -1,15 +1,9 @@
 """
 FastAPI Backend Server for Image Captioning.
-Loads the caption model, integrates Keras feature extraction,
+Loads the caption model, integrates ONNX feature extraction,
 and serves the interactive terminal shell webpage.
 """
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TF verbose logging
-
-import tensorflow as tf
-# Disable GPU for TensorFlow to avoid conflicts with PyTorch CUDA context
-tf.config.set_visible_devices([], 'GPU')
-
 import pickle
 import numpy as np
 import torch
@@ -17,41 +11,20 @@ import torch.nn.functional as F
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from tensorflow.keras.preprocessing.image import img_to_array
-from tensorflow.keras.applications.efficientnet import preprocess_input
 from PIL import Image
 import uvicorn
 import time
+import onnxruntime as ort
 
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Reshape, GlobalAveragePooling2D
-from tensorflow.keras.applications.efficientnet import EfficientNetB3
 from model_torch import build_model
 from eval_torch import greedy_generator, beam_search_generator
-
-def build_keras_extractor(spatial=False):
-    """
-    Builds an EfficientNetB3 feature extractor using Keras on CPU.
-    """
-    base_model = EfficientNetB3(weights='imagenet', input_shape=(300, 300, 3), include_top=False)
-    base_model.trainable = False
-    
-    if spatial:
-        last_conv_output = base_model.output
-        spatial_features = Reshape((100, 1536), name='spatial_reshape')(last_conv_output)
-        model = Model(inputs=base_model.input, outputs=spatial_features, name='EfficientNetB3_Spatial')
-    else:
-        pooled_output = GlobalAveragePooling2D(name='global_avg_pool')(base_model.output)
-        model = Model(inputs=base_model.input, outputs=pooled_output, name='EfficientNetB3_Pooled')
-        
-    return model
 
 app = FastAPI(title="Visium Image Captioning Engine")
 
 # Global variables for loaded models
 model = None
 tokenizer = None
-keras_extractor = None
+onnx_session = None
 max_len = 37
 spatial = True
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -59,7 +32,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 @app.on_event("startup")
 def load_models_and_configs():
-    global model, tokenizer, keras_extractor, max_len, spatial
+    global model, tokenizer, onnx_session, max_len, spatial
     
     print("\n--- INITIALIZING VISIUM CAPTION ENGINE ---")
     print(f"Device: {device}")
@@ -92,15 +65,18 @@ def load_models_and_configs():
     model.eval()
     print(f"Loaded PyTorch {model_type} model.")
     
-    # 4. Load Keras feature extractor on CPU
-    print("Loading Keras EfficientNetB3 feature extractor (running on CPU)...")
-    keras_extractor = build_keras_extractor(spatial=spatial)
+    # 4. Load ONNX feature extractor on CPU
+    print("Loading ONNX EfficientNetB3 feature extractor (running on CPU)...")
+    onnx_path = 'models/efficientnet_b3_spatial.onnx'
+    if not os.path.exists(onnx_path):
+        raise RuntimeError(f"ONNX model file missing at {onnx_path}")
+    onnx_session = ort.InferenceSession(onnx_path)
     print("All models loaded successfully! Server ready.\n")
 
 
 @app.post("/predict")
 async def predict_caption(file: UploadFile = File(...)):
-    global model, tokenizer, keras_extractor, max_len, spatial
+    global model, tokenizer, onnx_session, max_len, spatial
     
     if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image.")
@@ -111,13 +87,13 @@ async def predict_caption(file: UploadFile = File(...)):
         # 1. Preprocess uploaded image
         img = Image.open(file.file).convert('RGB')
         img_resized = img.resize((300, 300))
-        img_arr = img_to_array(img_resized)
+        img_arr = np.array(img_resized, dtype=np.float32)
         img_arr = np.expand_dims(img_arr, axis=0)
-        img_arr = preprocess_input(img_arr)
         
-        # 2. Extract features
+        # 2. Extract features via ONNX Runtime
         t_feat = time.time()
-        feat = keras_extractor.predict(img_arr, verbose=0)[0]
+        input_name = onnx_session.get_inputs()[0].name
+        feat = onnx_session.run(None, {input_name: img_arr})[0][0]
         feat_time = (time.time() - t_feat) * 1000
         
         # 3. Run PyTorch generators

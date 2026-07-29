@@ -3,7 +3,7 @@ uvicorn
 python-multipart
 torch
 torchvision
-tensorflow-cpu
+onnxruntime
 numpy
 pillow
 matplotlib

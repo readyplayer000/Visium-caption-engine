@@ -12,6 +12,7 @@ models/*
 !models/caption_model_attention.pt
 !models/config.pkl
 !models/tokenizer.pkl
+!models/efficientnet_b3_spatial.onnx
 
 .ipynb_checkpoints/
 
