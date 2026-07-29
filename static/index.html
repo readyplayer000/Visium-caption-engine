@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visium Image Captioning Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="terminal-container">
+        <!-- Terminal Header Bar (Windows Style) -->
+        <div class="terminal-header">
+            <div class="terminal-icon">🪟</div>
+            <div class="terminal-title">Visium Console - caption_engine.exe</div>
+            <div class="window-controls-win">
+                <span class="control-win minimize-win">‒</span>
+                <span class="control-win maximize-win">🗖</span>
+                <span class="control-win close-win">✕</span>
+            </div>
+        </div>
+
+        <!-- Terminal Console Screen (Split Screen Layout) -->
+        <div class="terminal-body" id="console">
+            <!-- Left Side: Main Prompt -->
+            <div class="terminal-left" id="console-left">
+                <!-- ASCII Art Header -->
+                <pre class="ascii-art">
+██╗   ██╗██╗███████╗██╗██╗   ██╗███╗   ███╗
+██║   ██║██║██╔════╝██║██║   ██║████╗ ████║
+██║   ██║██║███████╗██║██║   ██║██╔████╔██║
+╚██╗ ██╔╝██║╚════██║██║██║   ██║██║╚██╔╝██║
+ ╚████╔╝ ██║███████║██║╚██████╔╝██║ ╚═╝ ██║
+  ╚═══╝  ╚═╝╚══════╝╚═╝ ╚═════╝ ╚═╝     ╚═╝
+  Visium Engine 1.0 (RTX 5050 CUDA Node)
+                </pre>
+
+                <!-- Drag Zone Box -->
+                <div class="drag-zone" id="drop-zone">
+                    <div class="drag-text">
+                        [DRAG & DROP IMAGE FILE HERE OR CLICK TO BROWSE]
+                    </div>
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                </div>
+
+                <!-- Windows PowerShell Startup Headers (Sent Down!) -->
+                <div class="line comment">Windows PowerShell</div>
+                <div class="line comment">Copyright (C) Microsoft Corporation. All rights reserved.</div>
+                <div class="line comment">&nbsp;</div>
+                <div class="line comment">Try the new cross-platform PowerShell https://aka.ms/pscore6</div>
+                <div class="line comment">&nbsp;</div>
+                
+                <div class="line comment"># Drag & Drop an image file anywhere inside this terminal to begin.</div>
+                <div class="line command-line">
+                    <span class="prompt">PS C:\Users\Rohith></span> <span class="cmd-text">upload --file</span> <span class="pulse-cursor">_</span>
+                </div>
+
+                <!-- Terminal output history logs -->
+                <div class="terminal-output" id="output-history"></div>
+
+                <!-- Preview Card -->
+                <div class="preview-panel" id="preview-panel" style="display: none;">
+                    <div class="preview-header">[IMAGE_PREVIEW_BUFFER]</div>
+                    <img id="image-preview" src="" alt="Selected Preview">
+                </div>
+            </div>
+
+            <!-- Right Side: Live CUDA Tracer & Matrix Code Rain -->
+            <div class="terminal-right">
+                <div class="matrix-header">[CUDA_MEMORY_TRACER]</div>
+                <canvas id="matrix-canvas"></canvas>
+                <div class="tracer-logs" id="tracer-logs">
+                    <div class="tracer-line">[SYSTEM] CUDA Node RTX 5050 Online.</div>
+                    <div class="tracer-line">[SYSTEM] VRAM Total: 8,151 MiB</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/app.js"></script>
+</body>
+</html>

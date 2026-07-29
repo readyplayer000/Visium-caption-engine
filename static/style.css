@@ -1,0 +1,285 @@
+/* CSS Styling for Retro Console Image Captioning Web App */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #050811;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    color: #33ff33;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Scanline Retro Effect */
+body::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 4px, 6px 100%;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Container styling mimicking desktop OS window - FULLSCREEN */
+.terminal-container {
+    width: 100vw;
+    height: 100vh;
+    background-color: #0c0c0c;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+/* Title Header Bar (Windows Style) */
+.terminal-header {
+    background-color: #1e1e1e;
+    padding: 0;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #2d2d2d;
+    user-select: none;
+    justify-content: space-between;
+}
+
+.terminal-icon {
+    padding-left: 10px;
+    font-size: 14px;
+}
+
+.terminal-title {
+    font-size: 12px;
+    color: #cccccc;
+    padding-left: 10px;
+    flex-grow: 1;
+    text-align: left;
+}
+
+.window-controls-win {
+    display: flex;
+    height: 100%;
+}
+
+.control-win {
+    width: 46px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #cccccc;
+    transition: background-color 0.1s ease;
+    cursor: default;
+}
+
+.control-win:hover {
+    background-color: #333333;
+}
+
+.close-win:hover {
+    background-color: #e81123 !important;
+    color: #ffffff;
+}
+
+/* Console Screen Body (Split Screen Layout) */
+.terminal-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 32px);
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Left panel: PowerShell interaction */
+.terminal-left {
+    width: 65%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    border-right: 1px solid #1f242c;
+}
+
+/* Right panel: Hacker / Matrix Monitor */
+.terminal-right {
+    width: 35%;
+    height: 100%;
+    background-color: #06080e;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.matrix-header {
+    background-color: #121824;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: #00e5ff;
+    text-align: center;
+    border-bottom: 1px solid #1f242c;
+    letter-spacing: 1px;
+}
+
+#matrix-canvas {
+    flex-grow: 1;
+    width: 100%;
+    max-height: 50%;
+    border-bottom: 1px solid #1f242c;
+    display: block;
+}
+
+.tracer-logs {
+    height: 50%;
+    overflow-y: auto;
+    padding: 15px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #27c93f;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background-color: #040509;
+}
+
+.tracer-line {
+    word-break: break-all;
+    font-family: 'Fira Code', monospace;
+}
+
+.ascii-art {
+    color: #00e5ff;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: pre-wrap;
+    margin-bottom: 10px;
+    text-shadow: 0 0 5px rgba(0, 229, 255, 0.4);
+}
+
+.line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    word-break: break-all;
+}
+
+.comment {
+    color: #8b949e;
+    font-style: italic;
+}
+
+.prompt {
+    color: #00e5ff;
+    font-weight: bold;
+}
+
+.cmd-text {
+    color: #ffffff;
+}
+
+/* Cursor Blinking Effect */
+.pulse-cursor {
+    color: #33ff33;
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    from, to { color: transparent }
+    50% { color: #33ff33 }
+}
+
+/* Drop-zone drag box */
+.drag-zone {
+    border: 2px dashed #1a2238;
+    border-radius: 6px;
+    padding: 30px;
+    text-align: center;
+    color: #8b949e;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.drag-zone:hover, .drag-zone.dragover {
+    border-color: #00e5ff;
+    color: #00e5ff;
+    background-color: rgba(0, 229, 255, 0.02);
+    box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.05);
+}
+
+/* Log outputs */
+.terminal-output {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.log-entry {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.log-entry.info { color: #00e5ff; }
+.log-entry.success { color: #33ff33; }
+.log-entry.warn { color: #ffbd2e; }
+.log-entry.error { color: #ff5f56; }
+.log-entry.result {
+    color: #ffffff;
+    background-color: #121824;
+    padding: 10px 15px;
+    border-left: 3px solid #00e5ff;
+    border-radius: 0 4px 4px 0;
+    margin-top: 10px;
+    white-space: pre-wrap;
+    line-height: 1.8;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Image preview container */
+.preview-panel {
+    border: 1px solid #1a2238;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #050811;
+    max-width: 320px;
+    margin-top: 15px;
+    align-self: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.preview-header {
+    background-color: #161b22;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: #8b949e;
+    text-align: center;
+    border-bottom: 1px solid #1f242c;
+}
+
+#image-preview {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 250px;
+    object-fit: contain;
+}

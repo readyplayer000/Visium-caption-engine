@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data files
+data/
+*.zip
+
+# Allow production weights and configs to be tracked in models/
+models/*
+!models/caption_model_attention.pt
+!models/config.pkl
+!models/tokenizer.pkl
+
+.ipynb_checkpoints/
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
