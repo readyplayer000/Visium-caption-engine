@@ -51,7 +51,12 @@ def main():
     # 3. Load tokenizer and PyTorch model
     print("Loading tokenizer...")
     with open(tokenizer_path, 'rb') as f:
-        tokenizer = pickle.load(f)
+        obj = pickle.load(f)
+    if isinstance(obj, dict):
+        from dataset import VisiumTokenizer
+        tokenizer = VisiumTokenizer(obj)
+    else:
+        tokenizer = obj
     vocab_size = len(tokenizer.word_index) + 1
         
     print(f"Loading PyTorch caption model ({model_type})...")

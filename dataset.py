@@ -2,10 +2,6 @@ import os
 import re
 import pickle
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 
 def clean_text(text):
@@ -119,10 +115,23 @@ def add_start_end_tokens(captions_dict):
         formatted_dict[image_id] = [f"startseq {c} endseq" for c in captions]
     return formatted_dict
 
+class VisiumTokenizer:
+    def __init__(self, word_index):
+        self.word_index = word_index
+        self.index_word = {i: w for w, i in word_index.items()}
+        
+    def texts_to_sequences(self, texts):
+        seqs = []
+        for text in texts:
+            words = text.lower().split()
+            seqs.append([self.word_index[w] for w in words if w in self.word_index])
+        return seqs
+
 def get_tokenizer(train_captions_dict, save_path=None):
     """
     Fits a Tokenizer on the training captions.
     """
+    from tensorflow.keras.preprocessing.text import Tokenizer
     all_captions = []
     for captions in train_captions_dict.values():
         all_captions.extend(captions)
@@ -133,14 +142,18 @@ def get_tokenizer(train_captions_dict, save_path=None):
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         with open(save_path, 'wb') as f:
-            pickle.dump(tokenizer, f)
+            pickle.dump(tokenizer.word_index, f)
         print(f"Tokenizer saved to {save_path}")
         
     return tokenizer
 
 def load_tokenizer(load_path):
     with open(load_path, 'rb') as f:
-        tokenizer = pickle.load(f)
+        obj = pickle.load(f)
+    if isinstance(obj, dict):
+        tokenizer = VisiumTokenizer(obj)
+    else:
+        tokenizer = obj
     print(f"Tokenizer loaded from {load_path}")
     return tokenizer
 
