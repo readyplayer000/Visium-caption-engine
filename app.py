@@ -34,6 +34,10 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 def load_models_and_configs():
     global model, tokenizer, onnx_session, max_len, spatial
     
+    # Configure PyTorch to use 1 thread to avoid CPU contention/thrashing on Render
+    torch.set_num_threads(1)
+    torch.set_num_interop_threads(1)
+    
     print("\n--- INITIALIZING VISIUM CAPTION ENGINE ---")
     print(f"Device: {device}")
     
@@ -70,12 +74,16 @@ def load_models_and_configs():
     model.eval()
     print(f"Loaded PyTorch {model_type} model.")
     
-    # 4. Load ONNX feature extractor on CPU
+    # 4. Load ONNX feature extractor on CPU (optimized for single-thread execution in container)
     print("Loading ONNX EfficientNetB3 feature extractor (running on CPU)...")
     onnx_path = 'models/efficientnet_b3_spatial.onnx'
     if not os.path.exists(onnx_path):
         raise RuntimeError(f"ONNX model file missing at {onnx_path}")
-    onnx_session = ort.InferenceSession(onnx_path)
+    
+    opts = ort.SessionOptions()
+    opts.intra_op_num_threads = 1
+    opts.inter_op_num_threads = 1
+    onnx_session = ort.InferenceSession(onnx_path, sess_options=opts)
     print("All models loaded successfully! Server ready.\n")
 
 
