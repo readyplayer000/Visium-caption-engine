@@ -10,3 +10,4 @@ pillow
 matplotlib
 tqdm
 nltk
+scikit-learn
